@@ -1,8 +1,9 @@
 import 'source-map-support/register'
-import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 
-const docClient = createDynamoDbClient();
+const utils = require("../utils.ts")
+
+const docClient = utils.createDynamoDbClient();
 const todosTable = process.env.TODOS_TABLE
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -39,18 +40,4 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     })
   }
 
-}
-
-
-
-function createDynamoDbClient(){
-  if(process.env.IS_OFFLINE) {
-    console.log("Creating a local dynamo db instance")
-    return new AWS.DynamoDB.DocumentClient({
-      region : 'localhost',
-      endpoint : 'http://localhost:8000'
-    })
-  }
-
-  return new AWS.DynamoDB.DocumentClient();
 }

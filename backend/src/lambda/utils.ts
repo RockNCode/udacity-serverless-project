@@ -7,10 +7,24 @@ import { parseUserId } from "../auth/utils";
  *
  * @returns a user id from a JWT token
  */
+import * as AWS  from 'aws-sdk'
+
 export function getUserId(event: APIGatewayProxyEvent): string {
   const authorization = event.headers.Authorization
   const split = authorization.split(' ')
   const jwtToken = split[1]
 
   return parseUserId(jwtToken)
+}
+
+export function createDynamoDbClient(){
+  if(process.env.IS_OFFLINE) {
+    console.log("Creating a local dynamo db instance")
+    return new AWS.DynamoDB.DocumentClient({
+      region : 'localhost',
+      endpoint : 'http://localhost:8000'
+    })
+  }
+
+  return new AWS.DynamoDB.DocumentClient();
 }

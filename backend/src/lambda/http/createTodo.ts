@@ -1,11 +1,11 @@
 import 'source-map-support/register'
 import * as uuid from 'uuid'
-import * as AWS  from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 
-const docClient = createDynamoDbClient();
+const utils = require("../utils.ts");
+const docClient = utils.createDynamoDbClient();
 
 const todosTable = process.env.TODOS_TABLE
 
@@ -13,10 +13,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   console.log('Caller event', event)
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
   const todoId = uuid.v4()
-  //JSON.parse(event.body)
   console.log(newTodo)
   // TODO: Implement creating a new TODO item
-  //return undefined
   const newItem = await createTodo(todoId, event);
   return {
     statusCode: 201,
@@ -25,40 +23,29 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      newItem: newItem,
+      newItem,
     })
   }
 }
 
 async function createTodo(todoId: string, event: any) {
-  const createdAt = new Date().toISOString()
   const newTodo = JSON.parse(event.body)
   console.log(event)
-  const newItem = {
+  const userId = "mgarcia" // temporary
+  const item = {
     todoId,
-    createdAt,
+    userId,
     ...newTodo
   }
-  console.log('Storing new item: ', newItem)
+  console.log('Storing new item: ', item)
 
   await docClient
     .put({
       TableName: todosTable,
-      Item: newItem
+      Item: item
     })
     .promise()
 
-  return newItem
+  return { item }
 }
 
-function createDynamoDbClient(){
-  if(process.env.IS_OFFLINE) {
-    console.log("Creating a local dynamo db instance")
-    return new AWS.DynamoDB.DocumentClient({
-      region : 'localhost',
-      endpoint : 'http://localhost:8000'
-    })
-  }
-
-  return new AWS.DynamoDB.DocumentClient();
-}

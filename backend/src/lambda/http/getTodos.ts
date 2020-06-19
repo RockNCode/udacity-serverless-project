@@ -1,8 +1,8 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import * as AWS  from 'aws-sdk'
 
-const docClient = createDynamoDbClient();
+const utils = require("../utils.ts")
+const docClient = utils.createDynamoDbClient();
 
 const todosTable = process.env.TODOS_TABLE
 
@@ -26,7 +26,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       headers: {
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify(result.Items)
+      body: JSON.stringify({items : result.Items})
     }
   }
 
@@ -37,16 +37,4 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     },
     body: ''
   }
-}
-
-function createDynamoDbClient(){
-  if(process.env.IS_OFFLINE) {
-    console.log("Creating a local dynamo db instance")
-    return new AWS.DynamoDB.DocumentClient({
-      region : 'localhost',
-      endpoint : 'http://localhost:8000'
-    })
-  }
-
-  return new AWS.DynamoDB.DocumentClient();
 }
