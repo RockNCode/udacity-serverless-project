@@ -57,14 +57,48 @@ export const handler = async (
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader)
   const jwt: Jwt = decode(token, { complete: true }) as Jwt
-  console.log("JWT is : " + jwt);
-  // TODO: Implement token verification
-  // You should implement it similarly to how it was implemented for the exercise for the lesson 5
-  // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
-  const res = await Axios.get(jwksUrl);
-  console.log(res.data);
-  return verify(token, res.data, { algorithms: ['RS256'] }) as JwtPayload
 
+  const res = await Axios.get(jwksUrl);
+  if(res.status < 200 || res.status >= 300) {
+    // Axios get error
+    return undefined
+  }
+
+  const signingKeys = getSigningKeys(res.data.keys);
+
+  if(signingKeys == undefined) {
+    console.log("Error getting the signing keys")
+  }
+  const signingKey = signingKeys.find(key => key.kid === jwt.header.kid);
+  if(!signingKey){
+    throw new Error('Invalid signing keys')
+    logger.error("No signing keys found")
+  }
+  return verify(token, signingKey.publicKey, { algorithms: ['RS256'] }) as JwtPayload
+
+}
+
+function getSigningKeys(keys) {
+    const signingKeys = keys
+    .filter(key => key.use === 'sig' // JWK property `use` determines the JWK is for signature verification
+                && key.kty === 'RSA' // We are only supporting RSA (RS256)
+                && key.kid           // The `kid` must be present to be useful for later
+                && ((key.x5c && key.x5c.length) || (key.n && key.e)) // Has useful public keys
+    ).map(key => {
+      return { kid: key.kid, nbf: key.nbf, publicKey: certToPEM(key.x5c[0]) };
+    });
+    console.log("Signing keys obtained : " + JSON.stringify(signingKeys))
+    if (!signingKeys.length) {
+      console.log("error getting signing keys")
+      return undefined;
+    }
+    return signingKeys;
+}
+
+function certToPEM(cert) {
+  cert = cert.match(/.{1,64}/g).join('\n');
+  cert = `-----BEGIN CERTIFICATE-----\n${cert}\n-----END CERTIFICATE-----\n`;
+  return cert;
 }
 
 function getToken(authHeader: string): string {
