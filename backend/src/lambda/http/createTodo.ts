@@ -23,7 +23,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      newItem,
+      item : newItem,
     })
   }
 }
@@ -31,7 +31,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 async function createTodo(todoId: string, event: any) {
   const newTodo = JSON.parse(event.body)
   console.log(event)
-  const userId = "mgarcia" // temporary
+  const userId = utils.getUserId(event);
   const item = {
     todoId,
     userId,
@@ -45,7 +45,7 @@ async function createTodo(todoId: string, event: any) {
       Item: item
     })
     .promise()
-
-  return { item }
+    console.log("ITEM TO RETURN : " + JSON.stringify(item))
+  return item
 }
 

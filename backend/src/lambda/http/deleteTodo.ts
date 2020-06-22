@@ -9,16 +9,24 @@ const todosTable = process.env.TODOS_TABLE
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   console.log("Deleting id  : " + todoId)
+  const userId = utils.getUserId(event);
+
   var params = {
   TableName:todosTable,
     Key : {
-        "userId": "mgarcia",
+        "userId": userId,
         "todoId": todoId
     }
   };
 
   console.log("Attempting a conditional delete...");
-  const result = await docClient.delete(params).promise()
+  const result = await docClient.delete(params,function(err, data) {
+    if (err)
+      console.log('delete error ', err)
+    else
+      console.log('delete ok : ' + JSON.stringify(data))
+  }
+  ).promise()
   console.log(JSON.stringify(result))
   if (result.ConsumedCapacity == undefined) {
     return {

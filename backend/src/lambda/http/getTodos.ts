@@ -10,8 +10,7 @@ const todosTable = process.env.TODOS_TABLE
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   // TODO: Get all TODO items for a current user
   console.log('Caller event', event)
-  // Testing purposes, to be extracted from JWT token
-  const userId = "mgarcia"
+  const userId = utils.getUserId(event);
   const result = await docClient.query({
       TableName : todosTable,
       KeyConditionExpression: 'userId = :userId',
@@ -20,21 +19,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       }
   }).promise()
 
-  if (result.Count !== 0) {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({items : result.Items})
-    }
-  }
-
   return {
-    statusCode: 404,
+    statusCode: 200,
     headers: {
       'Access-Control-Allow-Origin': '*'
     },
-    body: ''
+    body: JSON.stringify({items : result.Items})
   }
+
 }

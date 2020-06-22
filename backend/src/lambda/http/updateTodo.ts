@@ -11,12 +11,13 @@ const todosTable = process.env.TODOS_TABLE
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   const updateData: UpdateTodoRequest = JSON.parse(event.body)
+  const userId = utils.getUserId(event);
 
   console.log("Updating id  : " + todoId)
   var params = {
     TableName:todosTable,
     Key:{
-        "userId": "mgarcia",
+        "userId": userId,
         "todoId": todoId
     },
     ExpressionAttributeNames: { "#myname": "name" },
@@ -39,11 +40,5 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     },
     body: ""
   }
-//   , function(err, data) {
-//     if (err) {
-//         console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-//     } else {
-//         console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
-//     }
-// }
+
 }
