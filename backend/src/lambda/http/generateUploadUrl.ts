@@ -2,7 +2,6 @@ import 'source-map-support/register'
 import * as AWS from 'aws-sdk'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 
-
 export const s3 = new AWS.S3({signatureVersion: 'v4'})
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -15,6 +14,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     Expires: signedUrlExpireSeconds,
   });
 
+  
   return {
     statusCode: 200,
     headers: {

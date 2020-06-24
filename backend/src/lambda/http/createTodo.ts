@@ -8,7 +8,7 @@ const utils = require("../utils.ts");
 const docClient = utils.createDynamoDbClient();
 
 const todosTable = process.env.TODOS_TABLE
-
+const bucket = process.env.IMAGES_S3_BUCKET
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log('Caller event', event)
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
@@ -35,8 +35,11 @@ async function createTodo(todoId: string, event: any) {
   const item = {
     todoId,
     userId,
-    ...newTodo
+    createdAt: new Date().toISOString(),
+    ...newTodo,
+    attachmentUrl: 'http://'+bucket+'.s3.amazonaws.com/'+todoId
   }
+
   console.log('Storing new item: ', item)
 
   await docClient
