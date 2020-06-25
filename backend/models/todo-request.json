@@ -11,6 +11,9 @@
       },
       "attachmentUrl": {
         "type": "string"
+      },
+      "done": {
+        "type": "boolean"
       }
     },
     "required": [

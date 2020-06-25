@@ -9,6 +9,7 @@ plugins:
   - serverless-dynamodb-local
   - serverless-offline
   - serverless-s3-local
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -66,9 +67,9 @@ custom:
         title: Todos API
         description: Serverless application for ToDos tracking
     models:
-      - name: CreateTodoRequest
+      - name: TodoRequestSchema
         contentType: application/json
-        schema: ${file(models/create-todo-request.json)}
+        schema: ${file(models/todo-request.json)}
 
 functions:
 
@@ -93,11 +94,12 @@ functions:
           path: todos
           cors: true
           authorizer : Auth
-          documentation: Create Todo
-          description: Create Todo
           reqValidatorName: RequestBodyValidator
-          requestModels:
-            'application/json': CreateTodoRequest
+          documentation:
+            summary: Create Todo
+            description: Create Todo
+            requestModels:
+              'application/json': TodoRequestSchema
 
 
   # TODO: Configure this function
@@ -109,6 +111,12 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer : Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update Todo
+            description: Update Todo
+            requestModels:
+              'application/json': TodoRequestSchema
 
   # TODO: Configure this function
   DeleteTodo:
