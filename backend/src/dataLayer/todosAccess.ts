@@ -73,6 +73,18 @@ export class TodosAccess {
         return item
     }
 
+    async generatePresignedUrl(todoId : string) {
+        const s3 = new XAWS.S3({signatureVersion: 'v4'})
+        const signedUrlExpireSeconds = 60 * 5;
+
+        return await s3.getSignedUrl('putObject', {
+          Bucket: process.env.IMAGES_S3_BUCKET,
+          Key: todoId,
+          Expires: signedUrlExpireSeconds,
+        });
+
+    }
+
 
 }
 

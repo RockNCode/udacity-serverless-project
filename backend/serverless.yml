@@ -15,7 +15,11 @@ provider:
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
-  
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
   environment:
     TODOS_TABLE: Todos2-${self:provider.stage}
     IMAGES_S3_BUCKET: images-todos-${self:provider.stage}

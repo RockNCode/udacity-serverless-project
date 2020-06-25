@@ -9,6 +9,7 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 
 const todosAccess = new TodosAccess()
 const bucket = process.env.IMAGES_S3_BUCKET
+
 export async function getAllTodosById(userId): Promise<TodoItem[]> {
     return await todosAccess.getTodosByUserId(userId)
 }
@@ -42,4 +43,8 @@ export async function createTodo(
         }
     return await todosAccess.updateTodoById(item,userId,todoId);
 
+  }
+
+  export async function generatePresignedUploadToS3(todoId: string)  {
+      return await todosAccess.generatePresignedUrl(todoId);
   }
