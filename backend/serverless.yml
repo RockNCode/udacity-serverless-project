@@ -25,25 +25,6 @@ provider:
     TODOS_TABLE: Todos2-${self:provider.stage}
     IMAGES_S3_BUCKET: images-todos-${self:provider.stage}
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Scan
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-        - dynamodb:DeleteItem
-        - dynamodb:UpdateItem
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-        - s3:GetObject
-      Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
-
 custom:
   topicName: TodosTopic-${self:provider.stage}
   # Local config
@@ -85,6 +66,12 @@ functions:
           path: todos
           cors: true
           auth: Auth
+    iamRoleStatementsName: Todos-role-get-todo-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -100,7 +87,12 @@ functions:
             description: Create Todo
             requestModels:
               'application/json': TodoRequestSchema
-
+    iamRoleStatementsName: Todos-role-create-todo-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   # TODO: Configure this function
   UpdateTodo:
@@ -117,6 +109,12 @@ functions:
             description: Update Todo
             requestModels:
               'application/json': TodoRequestSchema
+    iamRoleStatementsName: Todos-role-update-todo-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   # TODO: Configure this function
   DeleteTodo:
@@ -127,6 +125,12 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer : Auth
+    iamRoleStatementsName: Todos-role-delete-todo-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -137,7 +141,14 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer : Auth
-
+    iamRoleStatementsName: Todos-role-upload-s3-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+        - s3:PutObject
+        - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+        
 resources:
   Resources:
     GatewayResponseDefault4XX:
